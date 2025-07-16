@@ -1,0 +1,138 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DreamWorld - AI Chat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #1e3c72, #2a5298);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    header {
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.8rem;
+      background-color: rgba(0, 0, 0, 0.3);
+      font-weight: bold;
+    }
+    #chat-container {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .message {
+      padding: 0.75rem;
+      border-radius: 10px;
+      max-width: 70%;
+    }
+    .user {
+      background-color: #4a90e2;
+      align-self: flex-end;
+    }
+    .bot {
+      background-color: #7ed6df;
+      align-self: flex-start;
+      color: #000;
+    }
+    #input-form {
+      display: flex;
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.2);
+    }
+    #input {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+    }
+    #send {
+      padding: 0.75rem 1.5rem;
+      margin-left: 0.5rem;
+      font-size: 1rem;
+      background-color: #00cec9;
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    footer {
+      text-align: center;
+      font-size: 0.75rem;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    DreamWorld AI
+  </header>
+  <div id="chat-container"></div>
+  <form id="input-form">
+    <input type="text" id="input" placeholder="Sorunu yaz..." required />
+    <button type="submit" id="send">Gönder</button>
+  </form>
+  <footer>
+    &copy; 2025 DreamWorld - Tüm hakları saklıdır.
+  </footer>
+
+  <script>
+    const chatContainer = document.getElementById('chat-container');
+    const inputForm = document.getElementById('input-form');
+    const input = document.getElementById('input');
+
+    function addMessage(text, sender) {
+      const msg = document.createElement('div');
+      msg.className = `message ${sender}`;
+      msg.textContent = text;
+      chatContainer.appendChild(msg);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    inputForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userMessage = input.value.trim();
+      if (!userMessage) return;
+
+      addMessage(userMessage, 'user');
+      input.value = '';
+
+      addMessage('Yükleniyor...', 'bot');
+
+      try {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer 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'
+          },
+          body: JSON.stringify({
+            model: 'gpt-3.5-turbo',
+            messages: [
+              { role: 'user', content: userMessage }
+            ]
+          })
+        });
+
+        const data = await response.json();
+        const botReply = data.choices?.[0]?.message?.content || 'Cevap alınamadı.';
+
+        document.querySelector('.bot:last-child').textContent = botReply;
+      } catch (err) {
+        document.querySelector('.bot:last-child').textContent = 'Bir hata oluştu.';
+      }
+    });
+  </script>
+</body>
+</html>
